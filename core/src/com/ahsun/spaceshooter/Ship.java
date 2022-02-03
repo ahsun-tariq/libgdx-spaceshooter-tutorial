@@ -2,6 +2,9 @@ package com.ahsun.spaceshooter;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
+
+import org.w3c.dom.css.Rect;
 
 abstract public class Ship {
 
@@ -11,9 +14,8 @@ abstract public class Ship {
 
 
     //position & dimension
-    float xPosition, yPosition; //lower-left corner
-    float width, height;
 
+    Rectangle boundingBox;
 
     //laser information
     float laserWidth, laserHeight;
@@ -28,20 +30,19 @@ abstract public class Ship {
                float timeBetweenShots, TextureRegion shipTextureRegion, TextureRegion shieldTextureRegion,TextureRegion laserTextureRegion) {
         this.movementSpeed = movementSpeed;
         this.shield = shield;
-        this.xPosition = xCentre - width/2;
-        this.yPosition = yCentre - width/2;
+
         this.laserWidth = laserWidth;
         this.laserHeight = laserHeight;
         this.laserMovementSpeed = laserMovementSpeed;
         this.timeBetweenShots = timeBetweenShots;
-        this.width = width;
-        this.height = height;
+        this.boundingBox = new Rectangle(xCentre - width/2,yCentre - width/2,width,height);
         this.shipTextureRegion = shipTextureRegion;
         this.shieldTextureRegion = shieldTextureRegion;
         this.laserTextureRegion = laserTextureRegion;
     }
 
     public void update(float deltaTime){
+
         timeSinceLastShot += deltaTime;
     }
 
@@ -49,13 +50,25 @@ abstract public class Ship {
         return(timeSinceLastShot - timeBetweenShots >=0);
     }
 
+    public boolean intersects(Rectangle otherRectangle){
+
+        return boundingBox.overlaps(otherRectangle);
+    }
+
+    public void hit(Laser laser){
+        if (this.shield > 0){
+            this.shield --;
+        }
+    }
+
+
     public abstract Laser[] fireLasers();
 
     public void draw(Batch batch){
 
-        batch.draw(shipTextureRegion,xPosition,yPosition,width,height);
+        batch.draw(shipTextureRegion,boundingBox.x,boundingBox.y,boundingBox.width,boundingBox.height);
         if(shield >0){
-            batch.draw(shieldTextureRegion, xPosition, yPosition, width, height);
+            batch.draw(shieldTextureRegion, boundingBox.x,boundingBox.y,boundingBox.width,boundingBox.height);
         }
     }
 }
